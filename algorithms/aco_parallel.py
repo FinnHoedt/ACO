@@ -1,55 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import networkx as nx
-import argparse
 from joblib import Parallel, delayed
-import copy
-
-class Ant:
-    def __init__(self, graph):
-        self.graph = graph
-        self.current_node = np.random.randint(graph.num_nodes)
-        self.path = [self.current_node]
-        self.total_distance = 0
-        self.unvisited_nodes = set(range(self.graph.num_nodes))
-        self.unvisited_nodes.remove(self.current_node)
-
-    def select_next_node(self):
-        probabilities = np.zeros(self.graph.num_nodes)
-
-        for node in self.unvisited_nodes:
-            distance = self.graph.get_distance(self.current_node, node)
-            if distance > 0:
-                pheromone = self.graph.get_pheromone(self.current_node, node)
-                probabilities[node] = (pheromone ** 2 / distance)
-
-        if probabilities.sum() == 0:
-            # If no valid moves, select randomly from unvisited nodes
-            return np.random.choice(list(self.unvisited_nodes))
-        
-        probabilities /= probabilities.sum()
-        next_node = np.random.choice(range(self.graph.num_nodes), p=probabilities)
-        return next_node
-
-    def move(self):
-        next_node = self.select_next_node()
-        self.path.append(next_node)
-        self.total_distance += self.graph.get_distance(self.current_node, next_node)
-        self.current_node = next_node
-        self.unvisited_nodes.remove(next_node)
-
-    def complete_path(self):
-        while self.unvisited_nodes:
-            self.move()
-        # Return to start
-        self.total_distance += self.graph.get_distance(self.current_node, self.path[0])
-        self.path.append(self.path[0])
-
-def run_single_ant(graph_copy):
-    """Helper function to run a single ant - needed for multiprocessing"""
-    ant = Ant(graph_copy)
-    ant.complete_path()
-    return ant
 
 
 class ACOParallel:
@@ -95,8 +45,6 @@ class ACOParallel:
             self.update_pheromones_optimized(ants)
             self.best_distance_history.append(best_distance)
             
-            if best_distance < iteration_best_distance:
-                print(f"New best distance found: {best_distance:.2f}")
 
         return best_path, best_distance
 
@@ -177,39 +125,4 @@ def run_optimized_ant(pheromone_matrix, distance_matrix, num_nodes):
     
     return path, total_distance
 
-# Example usage function
-def compare_performance():
-    """
-    Example function to compare performance between sequential and parallel versions.
-    """
-    from helper.graph import Graph, generate_random_graph  # Assuming you have a Graph class
-    import time
-    
-    distances, coordinates = generate_random_graph(20, 42)
-    
-    print("Creating graph...")
-    graph = Graph(distances)
-    
-    
-    print("Running sequential ACO...")
-    start_time = time.time()
-    from algorithms.aco import ACO
-    sequential_aco = ACO(graph, 20, 100)
-    seq_path, seq_distance = sequential_aco.run()
-    seq_time = time.time() - start_time
-    
-    print("\nRunning optimized parallel ACO...")
-    start_time = time.time()
-    parallel_aco = ACOParallel(graph, 20, 100)
-    parallel_path, parallel_distance = parallel_aco.run()
-    parallel_time = time.time() - start_time
-
-    print(f"Sequential: {seq_time:.2f} seconds, distance: {seq_distance:.2f}")
-
-    
-    print(f"Parallel: {parallel_time:.2f} seconds, distance: {parallel_distance:.2f}")
-    print(f"Parallel speedup: {seq_time/parallel_time:.2f}x")
-    print(f"Parallel convergence: {seq_distance/parallel_distance:.2f}x")
-
-if __name__ == "__main__":
-    compare_performance() 
+ 

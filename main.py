@@ -5,6 +5,7 @@ import argparse
 import time
 from helper.graph import generate_random_graph, Graph
 from algorithms.aco import ACO
+from algorithms.aco_parallel import ACOParallel
 from helper.visualization import visualize_graph
 from algorithms.held_karp import solve_tsp_exact
 
@@ -17,7 +18,8 @@ def main():
     parser.add_argument('--alpha', type=float, default=1.0, help='Pheromonintensitätsfaktor (default: 1.0)')
     parser.add_argument('--beta', type=float, default=3.0, help='Heuristikgewichtung (default: 3.0)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed (default: 42)')
-    parser.add_argument('--compare-exact', action='store_true', help='Compare with exact solution')
+    parser.add_argument('--compare-exact', action='store_true', help='Vergleich mit Held Karp')
+    parser.add_argument('--parallel', action='store_true', help='WIP: Parallel')
     
     args = parser.parse_args()
     
@@ -33,13 +35,22 @@ def main():
     
     graph = Graph(distances)
     
-    print(f"ACO läuft mit {args.ants} Ameisen für {args.iterations} Iterationen...")
-    aco_start_time = time.time()
-    aco = ACO(graph, num_ants=args.ants, num_iterations=args.iterations, 
-              decay=args.decay, alpha=args.alpha)
-    
-    aco_path, aco_distance = aco.run()
-    aco_time = time.time() - aco_start_time
+    if args.parallel:
+        print(f"Parallel ACO läuft mit {args.ants} Ameisen für {args.iterations} Iterationen...")
+        aco_start_time = time.time()
+        aco = ACOParallel(graph, num_ants=args.ants, num_iterations=args.iterations, 
+                         decay=args.decay, alpha=args.alpha)
+        
+        aco_path, aco_distance = aco.run()
+        aco_time = time.time() - aco_start_time
+    else:
+        print(f"ACO läuft mit {args.ants} Ameisen für {args.iterations} Iterationen...")
+        aco_start_time = time.time()
+        aco = ACO(graph, num_ants=args.ants, num_iterations=args.iterations, 
+                  decay=args.decay, alpha=args.alpha, beta=args.beta)
+        
+        aco_path, aco_distance = aco.run()
+        aco_time = time.time() - aco_start_time
     
     print("\n" + "="*50)
     print("ACO ERGEBNISSE")
