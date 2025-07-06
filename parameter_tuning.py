@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from itertools import product
-from graph import generate_random_graph, Graph
-from aco import ACO
-from held_karp import solve_tsp_exact
+from helper.graph import generate_random_graph, Graph
+from algorithms.aco import ACO
+from algorithms.held_karp import solve_tsp_exact
 import pandas as pd
 import seaborn as sns
 
