@@ -72,7 +72,7 @@ def main():
     
     # Compare with exact solution if requested
     if args.compare_exact:
-        if args.nodes > 12:
+        if args.nodes > 20:
             print(f"\nWarnung: Berechnung für {args.nodes} dauert länger!")
             response = input("Trotzdem fortfahren? (j/N): ")
             if response.lower() != 'j':
