@@ -35,7 +35,7 @@ class Ant:
     def complete_path(self):
         while self.unvisited_nodes:
             self.move()
-        # Return to start
+        # Return start
         self.total_distance += self.graph.get_distance(self.current_node, self.path[0])
         self.path.append(self.path[0])
 
@@ -51,7 +51,6 @@ class ACO:
         self.best_distance_history = []
 
     def run(self):
-        # Set random seed at the beginning of each run
         if self.seed is not None:
             np.random.seed(self.seed)
             

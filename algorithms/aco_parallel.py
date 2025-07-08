@@ -23,25 +23,20 @@ class ACOParallel:
         for iteration in range(self.num_iterations):
             print(f"Iteration {iteration + 1}/{self.num_iterations}")
             
-            # Extract matrices for parallel processing (more memory efficient)
             pheromone_matrix, distance_matrix = self._extract_matrices()
             num_nodes = self.graph.num_nodes
             
-            # Run ants in parallel using optimized approach
             ants = Parallel(n_jobs=self.n_jobs, verbose=0)(
                 delayed(run_optimized_ant)(pheromone_matrix, distance_matrix, num_nodes) 
                 for _ in range(self.num_ants)
             )
             
-            # Find the best ant in this iteration
-            iteration_best_distance = best_distance
             for ant_data in ants:
                 path, total_distance = ant_data
                 if total_distance < best_distance:
                     best_path = path.copy()
                     best_distance = total_distance
 
-            # Update pheromones using the original graph
             self.update_pheromones_optimized(ants)
             self.best_distance_history.append(best_distance)
             
@@ -54,16 +49,13 @@ class ACOParallel:
         pheromone_matrix = np.zeros((num_nodes, num_nodes))
         distance_matrix = np.full((num_nodes, num_nodes), np.inf)
         
-        # Fill diagonal with zeros (distance from node to itself)
         np.fill_diagonal(distance_matrix, 0)
         
-        # Extract from NetworkX graph
         for edge in self.graph.graph.edges():
             node1, node2 = edge
             distance = self.graph.get_distance(node1, node2)
             pheromone = self.graph.get_pheromone(node1, node2)
             
-            # Make symmetric matrices
             distance_matrix[node1, node2] = distance
             distance_matrix[node2, node1] = distance
             pheromone_matrix[node1, node2] = pheromone
@@ -72,13 +64,11 @@ class ACOParallel:
         return pheromone_matrix, distance_matrix
 
     def update_pheromones_optimized(self, ant_data_list):
-        # Decay pheromones
         for edge in self.graph.graph.edges():
             node1, node2 = edge
             current_pheromone = self.graph.get_pheromone(node1, node2)
             self.graph.set_pheromone(node1, node2, current_pheromone * self.decay)
         
-        # Add new pheromones
         for path, total_distance in ant_data_list:
             for i in range(len(path) - 1):
                 from_node = path[i]
@@ -119,7 +109,6 @@ def run_optimized_ant(pheromone_matrix, distance_matrix, num_nodes):
         current_node = next_node
         unvisited_nodes.remove(next_node)
     
-    # Return to start
     total_distance += distance_matrix[current_node, path[0]]
     path.append(path[0])
     

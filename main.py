@@ -23,7 +23,6 @@ def main():
     
     args = parser.parse_args()
     
-    # Set default number of ants to number of nodes if not specified
     if args.ants is None:
         args.ants = args.nodes
     
@@ -60,17 +59,14 @@ def main():
     print(f"Pfadlänge: {len(aco_path) - 1} Kanten")
     print(f"Rechenzeit: {aco_time:.3f} Sekunden")
     
-    # Show convergence
     print(f"\nKonvergenz:")
     print(f"Anfängliche beste Distanz: {aco.best_distance_history[0]:.2f}")
     print(f"Finale beste Distanz: {aco.best_distance_history[-1]:.2f}")
     print(f"Verbesserung: {((aco.best_distance_history[0] - aco.best_distance_history[-1]) / aco.best_distance_history[0] * 100):.2f}%")
     
-    # Initialize exact solution variables
     exact_path = None
     exact_distance = None
     
-    # Compare with exact solution if requested
     if args.compare_exact:
         if args.nodes > 20:
             print(f"\nWarnung: Berechnung für {args.nodes} dauert länger!")
@@ -106,7 +102,6 @@ def main():
     print("\nVisualisiere Graph...")
     visualize_graph(graph, aco_path, coordinates, aco_distance, exact_path, exact_distance)
     
-    # Plot convergence
     plt.figure(figsize=(10, 6))
     plt.plot(aco.best_distance_history, 'b-', linewidth=2)
     plt.title('ACO Konvergenz')

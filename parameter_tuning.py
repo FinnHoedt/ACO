@@ -44,7 +44,6 @@ class ParameterTuner:
                 'beta': [1.0, 2.0, 3.0, 4.0, 5.0]
             }
         
-        # Generate multiple graph instances if no graph provided
         if self.graph is None:
             print(f"Generating {self.num_graph_instances} different {num_nodes}-node graphs...")
             self.graphs = []
@@ -56,11 +55,9 @@ class ParameterTuner:
             self.graphs = [self.graph]
             self.num_graph_instances = 1
         
-        # Set fixed values for ants and iterations
         if num_ants is None:
             num_ants = num_nodes if self.graph is None else self.graph.num_nodes
         
-        # Create all parameter combinations
         param_names = list(parameter_ranges.keys())
         param_values = list(parameter_ranges.values())
         param_combinations = list(product(*param_values))
@@ -78,7 +75,6 @@ class ParameterTuner:
             if self.verbose:
                 print(f"\nCombination {i+1}/{total_combinations}: {param_dict}")
             
-            # Collect results across all graph instances
             all_distances = []
             all_times = []
             
@@ -86,14 +82,11 @@ class ParameterTuner:
                 if self.verbose and self.num_graph_instances > 1:
                     print(f"  Graph {graph_idx+1}/{self.num_graph_instances}")
                 
-                # Run ACO multiple times on this graph instance
                 for run in range(self.num_runs):
                     start_time = time.time()
                     
-                    # Reset graph pheromones for each run
                     graph.reset_pheromones()
                     
-                    # Use different random seed for each run
                     run_seed = base_seed + graph_idx * 1000 + run
                     
                     aco = ACO(graph, num_ants=num_ants, num_iterations=num_iterations, 
@@ -104,7 +97,6 @@ class ParameterTuner:
                     all_distances.append(distance)
                     all_times.append(run_time)
             
-            # Calculate statistics across all runs and graph instances
             result = {
                 'num_ants': num_ants,
                 'num_iterations': num_iterations,
@@ -141,7 +133,6 @@ class ParameterTuner:
         if not self.results:
             raise ValueError("No results available. Run tune_parameters() first.")
         
-        # Sort by criterion (ascending for distance, descending for success_rate)
         reverse = criterion == 'success_rate'
         sorted_results = sorted(self.results, key=lambda x: x[criterion], reverse=reverse)
         
@@ -182,17 +173,14 @@ class ParameterTuner:
         
         df = pd.DataFrame(self.results)
         
-        # Create subplots
         fig, axes = plt.subplots(1, 3, figsize=(15, 5))
         fig.suptitle('Parameter Analysis', fontsize=16)
         
-        # Plot effect of each parameter
         parameters = ['decay', 'alpha', 'beta']
         
         for i, param in enumerate(parameters):
             ax = axes[i]
             
-            # Group by parameter value and calculate mean performance
             param_groups = df.groupby(param)['mean_distance'].agg(['mean', 'std']).reset_index()
             
             ax.errorbar(param_groups[param], param_groups['mean'], 
@@ -205,7 +193,6 @@ class ParameterTuner:
         plt.tight_layout()
         plt.show()
         
-        # Correlation heatmap
         plt.figure(figsize=(8, 6))
         correlation_params = ['decay', 'alpha', 'beta', 'mean_distance', 'mean_time']
         corr_matrix = df[correlation_params].corr()
@@ -228,10 +215,8 @@ class ParameterTuner:
         print("COMPARISON WITH EXACT SOLUTION")
         print("="*60)
         
-        # Reset pheromones
         self.graph.reset_pheromones()
         
-        # Run ACO with best parameters
         print("Running ACO with best parameters...")
         aco_start = time.time()
         aco = ACO(self.graph, 
@@ -244,13 +229,11 @@ class ParameterTuner:
         aco_path, aco_distance = aco.run()
         aco_time = time.time() - aco_start
         
-        # Calculate exact solution
         print("Calculating exact solution...")
         exact_start = time.time()
         exact_path, exact_distance = solve_tsp_exact(self.graph)
         exact_time = time.time() - exact_start
         
-        # Display comparison
         gap = ((aco_distance - exact_distance) / exact_distance) * 100
         
         print(f"\nBest parameters found:")
@@ -295,7 +278,6 @@ def tune_aco_parameters(nodes=15, seed=42, parameter_ranges=None, num_runs=3,
     """
     print(f"Setting up parameter tuning for {nodes}-node graphs...")
     
-    # Create tuner without a specific graph - it will generate multiple instances
     tuner = ParameterTuner(graph=None, num_runs=num_runs, num_graph_instances=num_graph_instances)
     
     print("Starting parameter tuning...")
@@ -306,18 +288,14 @@ def tune_aco_parameters(nodes=15, seed=42, parameter_ranges=None, num_runs=3,
     
     print(f"\nParameter tuning completed in {total_time:.2f} seconds")
     
-    # Display results
     tuner.display_results()
     
-    # Plot analysis
     tuner.plot_parameter_analysis()
     
-    # Compare with exact solution if requested and feasible
     if compare_exact and nodes <= 12:
         print("\nComparing best parameters with exact solution on first graph instance...")
-        # Use the first graph instance for comparison
         comparison_tuner = ParameterTuner(graph=tuner.graphs[0], num_runs=1)
-        comparison_tuner.results = results  # Use the same results for best params
+        comparison_tuner.results = results 
         comparison_tuner.compare_with_exact()
     elif compare_exact:
         print(f"\nSkipping exact comparison for {nodes} nodes (too large).")
@@ -326,7 +304,6 @@ def tune_aco_parameters(nodes=15, seed=42, parameter_ranges=None, num_runs=3,
 
 
 if __name__ == "__main__":
-    # Example usage
     import argparse
     
     parser = argparse.ArgumentParser(description='ACO Parameter Tuning')
@@ -345,7 +322,6 @@ if __name__ == "__main__":
         print("Error: Minimum 3 nodes required")
         exit(1)
     
-    # Quick test with reduced parameter space
     if args.quick_test:
         print("Running quick test with reduced parameter space...")
         quick_ranges = {
