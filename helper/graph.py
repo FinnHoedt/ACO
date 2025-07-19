@@ -7,11 +7,9 @@ class Graph:
         self.num_nodes = len(distances)
         self.graph = nx.Graph()
         
-        # Add nodes
         for i in range(self.num_nodes):
             self.graph.add_node(i)
         
-        # Add edges with distances and initial pheromones
         for i in range(self.num_nodes):
             for j in range(i + 1, self.num_nodes):
                 if distances[i][j] > 0:
@@ -50,10 +48,8 @@ def generate_random_graph(num_nodes, seed=42):
     """Generate a random symmetric distance matrix for TSP"""
     np.random.seed(seed)
     
-    # Generate random coordinates for nodes
     coordinates = np.random.rand(num_nodes, 2) * 100
     
-    # Calculate Euclidean distances
     distances = np.zeros((num_nodes, num_nodes))
     for i in range(num_nodes):
         for j in range(num_nodes):

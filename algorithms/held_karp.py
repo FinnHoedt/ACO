@@ -16,31 +16,28 @@ def held_karp(dist_matrix):
     """
     n = len(dist_matrix)
     
-    # Handle small cases
     if n <= 1:
         return 0, [0]
     if n == 2:
         return dist_matrix[0][1] + dist_matrix[1][0], [0, 1, 0]
     
-    # C[mask][last] = (min_cost, path) to visit all cities in mask ending at last city
     C = {}
 
-    # Initialize: paths of length 1 from city 0 to each other city
     for k in range(1, n):
         C[(1 << k, k)] = (dist_matrix[0][k], [0, k])
 
-    # Fill table for all subset sizes from 2 to n-1
+
     for subset_size in range(2, n):
         for subset in combinations(range(1, n), subset_size):
-            # Create bitmask for current subset
+        
             bits = sum([1 << k for k in subset])
             
-            # Try each city in subset as the last city
+      
             for k in subset:
-                prev_bits = bits & ~(1 << k)  # Remove k from bitmask
+                prev_bits = bits & ~(1 << k)  
                 res = []
                 
-                # Try each other city in subset as the previous city
+             
                 for m in subset:
                     if m == k:
                         continue
@@ -50,12 +47,12 @@ def held_karp(dist_matrix):
                 
                 C[(bits, k)] = min(res)
 
-    # Find minimum cost to return to start city
-    bits = (1 << n) - 2  # All cities except city 0
+  
+    bits = (1 << n) - 2 
     res = []
     for k in range(1, n):
         cost, path = C[(bits, k)]
-        cost += dist_matrix[k][0]  # Add cost to return to start
+        cost += dist_matrix[k][0]  
         res.append((cost, path + [0]))
     
     return min(res)
